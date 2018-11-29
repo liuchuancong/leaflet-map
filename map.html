@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Leaflet map</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="dist/leaflet.css" />
+	<link rel="stylesheet" href="dist/Leaflet.PolylineMeasure.css">
+	<link rel="stylesheet" href="dist/map.css" />
+	<link rel="stylesheet" href="dist/leaflet.contextmenu.min.css" />
+	<link rel="stylesheet" href="dist/MarkerCluster.css" />
+	<link rel="stylesheet" href="dist/MarkerCluster.Default.css" />
+	<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="dist/leaflet-beautify-marker-icon.css" />
+	<link rel="stylesheet" href="dist/css/datepicker.css" />
+	<script src="dist/jquery.min.js"></script>
+	<script src="dist/leaflet.js"></script>
+	<script src="dist/leaflet.markercluster-src.js"></script>
+	<script src="dist/setting.js"></script>
+	<script src="dist/Leaflet.PolylineMeasure.js"></script>
+	<script src="dist/src.js"></script>
+	<script src="dist/leaflet.contextmenu.min.js"></script>
+	<script src="dist/js/moment.min.js"></script>
+	<script src="dist/js/datepicker.all.js"></script>
+	<script src="dist/js/datapicker.my.js"></script>
+	<script src="dist/leaflet-beautify-marker-icon.js"></script>
+	<link href='dist/css/leaflet.fullscreen.css' rel='stylesheet' />
+	<script src='dist/js/Leaflet.fullscreen.min.js'></script>
+	<script src='dist/js/Leaflet.Control.Custom.js'></script>
+	<script src='dist/js/leaflet.ajax.js'></script>
+</head>
+
+<body>
+	<div class="container">
+		<div id="mainmap"></div>
+	</div>
+
+</body>
+
+</html>
+
+<script>
+	// 放射的对象
+	var migrationLayer;
+	$(function () {
+		var mapcon = document.documentElement.clientHeight + 'px';
+		$("#mainmap").css('height', mapcon);
+	});
+	$(window).resize(function () {
+		var rmapcon = document.documentElement.clientHeight + 'px';
+		$("#mainmap").css('height', rmapcon);
+	});
+
+	(function () {
+		$("#mainmap").empty();
+		var _map = null;
+		var url_normal = "http://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}";
+		// var url_normal = 'http://127.0.0.1:3001/1818940751/{z}/{x}/{y}';
+		// var url_normal = 	`http://192.168.0.147:8587/cache/getMapNetByZoom?z={z}&x={x}&y={y}`;
+		var glayer_normal = new L.TileLayer(url_normal, {
+			minZoom: 1,
+			maxZoom: 9,
+			// attribution: '普通地图'
+		});
+
+
+		var latlng = new L.LatLng(38.8225909761771, 105.380859375);
+		// 右键事件
+		_map = new L.Map('mainmap', {
+			center: latlng,
+			zoom: 2,
+			fullscreenControl: {
+				pseudoFullscreen: false
+			},
+			contextmenu: true,
+			contextmenuWidth: 140,
+			contextmenuItems: [{
+				text: '显示地理位置',
+				callback: showCoordinates
+			}, {
+				text: '中心点',
+				callback: centerMap
+			}, '-', {
+				text: '放大',
+				icon: 'dist/images/zoom-in.png',
+				callback: zoomIn
+			}, {
+				text: 'Zoom out',
+				icon: 'dist/images/zoom-out.png',
+				callback: zoomOut
+			}],
+			layers: [glayer_normal]
+		});
+
+
+
+
+		//添加页面控件
+		L.control.custom({
+				position: 'topright',
+				content: `
+				<input type="button" value="回放" class="btn" onclick="setData()">
+				<input type="button" value="隐藏" class="btn" onclick="hide()">
+				<input type="button" value="显示" class="btn" onclick="show()">
+				<input type="button" value="暂停" class="btn" onclick="pause()">
+				<input type="button" value="播放" class="btn" onclick="play()">
+				<input type="button" value="删除" class="btn" onclick="destroy()">`,
+				classes: 'btn-group-vertical btn-group-sm',
+				style: {
+					margin: '10px',
+					padding: '0px 0 0 0',
+					cursor: 'pointer'
+				},
+				datas: {
+					'foo': 'bar',
+				},
+				events: {}
+			})
+			.addTo(_map);
+		L.control.custom({
+				position: 'topleft',
+				content: `
+				<div class="mt40 datapicker-container">
+					<div class="c-datepicker-date-editor J-datepicker-range mt10">
+						<i class="c-datepicker-range__icon kxiconfont icon-clock"></i>
+						<input placeholder="开始日期" name="" class="c-datepicker-data-input" value="2018-01-01 04:00:00">
+						<span class="c-datepicker-range-separator">-</span>
+						<input placeholder="结束日期" name="" class="c-datepicker-data-input" value="2018-03-01 04:00:00">
+					</div>
+				</div>`,
+				classes: '',
+				style: {
+					position: 'absolute',
+					left: '50px',
+					top: '0px',
+					width: '200px',
+				},
+			})
+			.addTo(_map);
+		var marker = L.marker([34.298068350990825, 108.94592285156251]).addTo(_map);
+		var marker2 = L.marker([29.35345166863502, 106.94091796875001]).addTo(_map);
+		var baseLayers = {
+			"普通地图": glayer_normal,
+		};
+		var latlngs = [
+			[45.51, -122.68],
+			[37.77, -122.43],
+			[34.04, -118.2]
+		];
+		// 划线
+		L.control.polylineMeasure(options).addTo(_map);
+		var polyline = L.polyline(latlngs, {
+			color: 'red'
+		}).addTo(_map);
+		// 缩放条
+		L.control.scale({
+			maxWidth: 240,
+			metric: true,
+			imperial: false,
+			position: 'bottomleft'
+		}).addTo(_map);
+		// zoom the map to the polyline
+		_map.fitBounds(polyline.getBounds());
+		// 划线
+		var polygon = L.polyline([
+			[61.77312286453146, 94.74609375000001],
+			[40.84706035607122, 74.00390625000001],
+
+		]).addTo(_map);
+		// 冒泡
+		marker.bindPopup("<b>西安</b>");
+		// 滑动提示
+		marker.bindTooltip("西安，古称长安、镐京。");
+		marker2.bindPopup("<b>重庆</b>");
+		// 放射
+		var lrmap = _map.setView([35, -95], 5);
+		// 标记群
+		var markers = L.markerClusterGroup();
+		for (var i = 0; i < addressPoints.length; i++) {
+			var a = addressPoints[i];
+			var title = a[2];
+			var marker = L.marker(new L.LatLng(a[0], a[1]), {
+				title: title
+			});
+			marker.bindPopup(title);
+			markers.addLayer(marker);
+		}
+
+		_map.addLayer(markers);
+		//自定义标记
+		optionIcon = {
+			icon: 'camera-retro',
+			spin: '',
+			borderColor: '#8A90B4',
+			textColor: 'white',
+			backgroundColor: '#8A90B4'
+		};
+		L.marker([34.298068350990825, 108.94592285156251], {
+			icon: L.BeautifyIcon.icon(optionIcon),
+			draggable: true
+		}).addTo(_map).bindPopup("I'm Beautify");
+
+		function showCoordinates(e) {
+			alert(e.latlng);
+		}
+
+		function centerMap(e) {
+			_map.panTo(e.latlng);
+		}
+
+		function zoomIn(e) {
+			_map.zoomIn();
+		}
+
+		function zoomOut(e) {
+			_map.zoomOut();
+		}
+		// <!-- code -->
+		migrationLayer = new L.migrationLayer({
+			map: lrmap,
+			data: data,
+			pulseRadius: 20,
+			pulseBorderWidth: 2,
+			arcWidth: 1,
+			arcLabel: true,
+			arcLabelFont: '10px sans-serif',
+			maxWidth: 2
+		});
+		migrationLayer.addTo(lrmap);
+		var geojsonLayer = new L.Util.ajax("./dist/json/geo.json").then(function (data) {
+			migrationLayer.setData(data);
+			setTimeout(function () {
+				for (var i = 0; i <= data.length; i++) {
+					if (i <= data.length - 1) {
+						var a = L.marker([data[i].to[1] + '', data[i].to[0] + '']).addTo(_map);
+						a.bindPopup(data[i].labels[1]);
+					} else {
+						var a = L.marker([data[0].from[1] + '', data[0].from[0] + '']).addTo(_map);
+						a.bindPopup(data[0].labels[0]);
+					}
+				}
+			}, 3000)
+
+		});
+	})();
+
+	function setData() {
+		migrationLayer.setData(data2);
+	}
+
+	function hide() {
+		migrationLayer.hide();
+	}
+
+	function show() {
+		migrationLayer.show();
+	}
+
+	function play() {
+		migrationLayer.play();
+	}
+
+	function pause() {
+		migrationLayer.pause();
+	}
+
+	function destroy() {
+		migrationLayer.destroy();
+	}
+</script>
