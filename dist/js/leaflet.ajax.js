@@ -356,7 +356,7 @@ module.exports = function (url, options) {
       if (request.readyState === 4) {
         if ((request.status < 400 && options.local) || request.status === 200) {
           if (global.JSON) {
-            response = JSON.parse(request.responseText);
+            response = request.responseText?JSON.parse(request.responseText):'';
           } else {
             reject(new Error('JSON is not supported'));
           }

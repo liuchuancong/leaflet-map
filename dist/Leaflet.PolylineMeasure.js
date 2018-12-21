@@ -75,9 +75,9 @@
              * @type {String}
              * @default
              */
-            tooltipTextDraganddelete: 'Click and drag to <b>move point</b><br>Press SHIFT-key and click to <b>delete point</b>',
-            tooltipTextResume: '<br>Press CTRL-key and click to <b>resume line</b>',
-            tooltipTextAdd: 'Press CTRL-key and click to <b>add point</b>',
+            tooltipTextDraganddelete: '点击和拖动去 <b>移动点</b><br>按SHIFT和鼠标左键 <b>删除点</b>',
+            tooltipTextResume: '<br>按 CTRL键 然后点击 <b>重新画线</b>',
+            tooltipTextAdd: '按CTRL然后点击 <b>增加点</b>',
                         
             /**
              * Title for the control going to be switched on

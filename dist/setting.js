@@ -2,19 +2,19 @@ options = {
     position: 'topleft', // Position to show the control. Values: 'topright', 'topleft', 'bottomright', 'bottomleft'
     unit: 'metres', // Show imperial or metric distances. Values: 'metres', 'landmiles', 'nauticalmiles'
     clearMeasurementsOnStop: false, // Clear all the measurements when the control is unselected
-    showBearings: true, // Whether bearings are displayed within the tooltips
-    bearingTextIn: 'In', // language dependend label for inbound bearings
-    bearingTextOut: 'Out', // language dependend label for outbound bearings
-    tooltipTextDraganddelete: 'Click and drag to <b>move point</b><br>Press SHIFT-key and click to <b>delete point</b>',
-    tooltipTextResume: '<br>Press CTRL-key and click to <b>resume line</b>',
-    tooltipTextAdd: 'Press CTRL-key and click to <b>add point</b>',
+    showBearings: false, // Whether bearings are displayed within the tooltips
+    bearingTextIn: '入', // language dependend label for inbound bearings
+    bearingTextOut: '出', // language dependend label for outbound bearings
+    tooltipTextDraganddelete: '点击和拖动去 <b>移动点</b><br>按SHIFT和鼠标左键 <b>删除点</b>',
+    tooltipTextResume: '<br>按 CTRL键 然后点击 <b>重新画线</b>',
+    tooltipTextAdd: '按CTRL然后点击 <b>增加点</b>',
     // language dependend labels for point's tooltips
-    measureControlTitleOn: 'Turn on PolylineMeasure', // Title for the control going to be switched on
-    measureControlTitleOff: 'Turn off PolylineMeasure', // Title for the control going to be switched off
+    measureControlTitleOn: '打开测量工具', // Title for the control going to be switched on
+    measureControlTitleOff: '关闭测量工具', // Title for the control going to be switched off
     measureControlLabel: '&#8614;', // Label of the Measure control (maybe a unicode symbol)
     measureControlClasses: [], // Classes to apply to the Measure control
-    showClearControl: false, // Show a control to clear all the measurements
-    clearControlTitle: 'Clear Measurements', // Title text to show on the clear measurements control button
+    showClearControl: true, // Show a control to clear all the measurements
+    clearControlTitle: '清除', // Title text to show on the clear measurements control button
     clearControlLabel: '&times', // Label of the Clear control (maybe a unicode symbol)
     clearControlClasses: [], // Classes to apply to clear control button
     showUnitControl: false, // Show a control to change the units of measurements
@@ -69,96 +69,6 @@ options = {
     },
 };
 
-//数据
-var data = [{
-    "from": [-118.2705, 33.9984],
-    "to": [-122.789336, 37.920458],
-    "labels": ["Los Angeles", "San Francisco"],
-    "color": "#ff3a31"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-80.247887, 25.792296],
-    "labels": ["Los Angeles",, "Miami"],
-    "color": "#ff7e2b"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-73.999705, 40.795047],
-    "labels": ["Los Angeles",, "New York"],
-    "color": "#ffc726"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-87.724088, 41.917846],
-    "labels": ["Los Angeles",, "Chicago"],
-    "color": "#e9ff20"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-92.145189, 46.77372],
-    "labels": ["Los Angeles",, "Duluth"],
-    "color": "#99ff1b"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-111.824547, 40.788055],
-    "labels": [null, "Salt Lake"],
-    "color": "#45ff15"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-111.364615, 47.536109],
-    "labels": ["sss", "Great Falls"],
-    "color": "#10ff33"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-97.585039, 35.511099],
-    "labels": [null, "Oklahoma"],
-    "color": "#0aff84"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-115.157907, 36.173032],
-    "labels": [null, "Las Vegas"],
-    "color": "#05ffd9"
-}, {
-    "from": [-118.2705, 33.9984],
-    "to": [-103.196215, 34.418753],
-    "labels": [null, "Clovis"],
-    "color": "#00ccff"
-}];
-
-var data2 = [{
-    "from": [-73.875523, 40.781063],
-    "to": [-80.247887, 25.792296],
-    "labels": ["New York", "Maima"],
-    "color": "#05ffd9"
-}, {
-    "from": [-73.875523, 40.781063],
-    "to": [-118.2705, 33.9984],
-    "labels": [null, "Los Angeles"],
-    "color": "#00ccff"
-}, {
-    "from": [-73.875523, 40.781063],
-    "to": [-87.724088, 41.917846],
-    "labels": [null, "Chicago"],
-    "color": "#ffc726"
-}, {
-    "from": [-73.875523, 40.781063],
-    "to": [-71.058437, 42.35902],
-    "labels": [null, "Boston"],
-    "color": "#e9ff20"
-}, {
-    "from": [-73.875523, 40.781063],
-    "to": [-75.683057, 45.42172],
-    "labels": [null, "Ottawa"],
-    "color": "#99ff1b"
-}];
-
-data = data.map(item => {
-    return { ...item,
-        value: parseInt(Math.random() * 20)
-    }
-});
-data2 = data2.map(item => {
-    return { ...item,
-        value: parseInt(Math.random() * 20)
-    }
-});
 
 
 //An extract of address points from the LINZ bulk extract: http://www.linz.govt.nz/survey-titles/landonline-data/landonline-bde

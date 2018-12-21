@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<title>Leaflet map</title>
+	<title>地图</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<link rel="stylesheet" href="dist/leaflet.css" />
@@ -13,7 +13,10 @@
 	<link rel="stylesheet" href="dist/MarkerCluster.Default.css" />
 	<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="dist/leaflet-beautify-marker-icon.css" />
+	<link rel="stylesheet" href="dist/css/bootstrap.min.css" />
 	<link rel="stylesheet" href="dist/css/datepicker.css" />
+	<link rel="stylesheet" href="dist/L.Control.Window.css">
+	<link rel="stylesheet" href="dist//labelauty.css">
 	<script src="dist/jquery.min.js"></script>
 	<script src="dist/leaflet.js"></script>
 	<script src="dist/leaflet.markercluster-src.js"></script>
@@ -23,18 +26,52 @@
 	<script src="dist/leaflet.contextmenu.min.js"></script>
 	<script src="dist/js/moment.min.js"></script>
 	<script src="dist/js/datepicker.all.js"></script>
-	<script src="dist/js/datapicker.my.js"></script>
 	<script src="dist/leaflet-beautify-marker-icon.js"></script>
 	<link href='dist/css/leaflet.fullscreen.css' rel='stylesheet' />
+	<link rel="stylesheet" href="dist/L.Control.SlideMenu.css">
 	<script src='dist/js/Leaflet.fullscreen.min.js'></script>
 	<script src='dist/js/Leaflet.Control.Custom.js'></script>
 	<script src='dist/js/leaflet.ajax.js'></script>
+	<link rel="stylesheet" href="dist/css/Leaflet.Dialog.css" />
+	<script src="dist/js/Leaflet.Dialog.js"></script>
+	<script src="dist/js/datapicker.my.js"></script>
+	<script src="dist/Leaflet.Search.js"></script>
+	<script src="dist/L.Polyline.SnakeAnim.js"></script>
+	<script src="dist/route.js"></script>
+	<script src="dist/leaflet.smoothmarkerbouncing.js"></script>
+	<script src="dist/L.Control.Window.js"></script>
+	<script src="dist/L.Control.SlideMenu.js"></script>
+	<script src="dist/labelauty.js"></script>
+	<!-- <link rel="stylesheet" href="dist/css/swiper.min.css">
+	<script src="dist/js/swiper.min.js"></script> -->
+	<style>
+		li {
+			padding-bottom: 20px;
+			color: red;
+			list-style: none;
+		}
+
+		html,
+		body {
+			margin: 0px;
+			padding: 0px;
+			width: 100%;
+			height: 100%;
+		}
+
+		#mainmap {
+			position: relative;
+			height: 100%;
+			min-height: 180px;
+			width: 100%;
+		}
+	</style>
 </head>
 
 <body>
-	<div class="container">
-		<div id="mainmap"></div>
-	</div>
+
+	<div id="mainmap"></div>
+
 
 </body>
 
@@ -43,23 +80,97 @@
 <script>
 	// 放射的对象
 	var migrationLayer;
+	var makerArr = [];
+	// var Globolurl = 'http://127.0.0.1:8587';
+	var Globolurl = 'http://192.168.0.106:8589';
+	var flag = true;
+	var warnflag = true;
+	var dialog;
+	var mapcon;
+	var _map;
+	var startTime;
+	var endTime;
+	var getPointByTime;
+
+	function getPoint(arr) {
+		L.control.slideMenu().toggle()
+		$.ajax({
+			type: "post",
+			url: Globolurl + "/MapDisplay6/selectMapLineDisplay6List",
+			dataType: "json",
+			contentType: 'application/json',
+			data: JSON.stringify({
+				"startTime": startTime, //	开始时间
+				"endTime": endTime, //	结束时间
+				"objnoList": arr //	目标
+			}),
+			success: function (res) {
+
+				console.log(res)
+				if (res.rtncode == 0) {
+					var lrmap = _map.setView([35, 107], 5);
+					if (makerArr.length > 0) {
+						for (var i = 0; i < makerArr.length; i++) {
+							makerArr[i].remove();
+						}
+						makerArr = [];
+					}
+					var arrData = [];
+					res.data.forEach(f => {
+						f.cityPoint.forEach(v=>{
+							arrData.push(v);
+						})
+						
+					});
+					migrationLayer = new L.migrationLayer({
+						map: lrmap,
+						data: arrData,
+						pulseRadius: 30,
+						pulseBorderWidth: 2,
+						arcWidth: 2,
+						arcLabel: true,
+						arcLabelFont: '10px sans-serif',
+						maxWidth: 1
+					});
+					migrationLayer.addTo(lrmap);
+					// res.data.map(f => {
+					// 	var marker = L.marker([f.]);
+					// 	var markerItem = marker.addTo(_map).bindPopup(f.labels);
+					// 	makerArr.push(marker);
+					// })
+
+					for (var i = 0; i <= arrData.length; i++) {
+						if (i <= arrData.length - 1) {
+							var a = L.marker([arrData[i].to[1] + '', arrData[i].to[0] + '']).addTo(_map);
+							a.bindPopup(arrData[i].labels[1]);
+						} else {
+							var a = L.marker([arrData[0].from[1] + '', arrData[0].from[0] + '']).addTo(_map);
+							a.bindPopup(arrData[0].labels[0]);
+						}
+					}
+				} else {
+					alert(res.rtnmsg)
+				}
+			}
+		})
+	}
 	$(function () {
-		var mapcon = document.documentElement.clientHeight + 'px';
+		mapcon = document.documentElement.clientHeight + 'px';
 		$("#mainmap").css('height', mapcon);
 	});
 	$(window).resize(function () {
-		var rmapcon = document.documentElement.clientHeight + 'px';
+		rmapcon = document.documentElement.clientHeight + 'px';
 		$("#mainmap").css('height', rmapcon);
 	});
 
 	(function () {
 		$("#mainmap").empty();
-		var _map = null;
+
 		var url_normal = "http://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}";
-		// var url_normal = 'http://127.0.0.1:3001/1818940751/{z}/{x}/{y}';
-		// var url_normal = 	`http://192.168.0.147:8587/cache/getMapNetByZoom?z={z}&x={x}&y={y}`;
+		// var url_normal = '../../tile/1818940751/{z}/{x}/{y}.png';
+		// var url_normal = 	`'+Globolurl+'/cache/getMapNetByZoom?z={z}&x={x}&y={y}&Type=1818940751`;
 		var glayer_normal = new L.TileLayer(url_normal, {
-			minZoom: 1,
+			minZoom: 2,
 			maxZoom: 9,
 			// attribution: '普通地图'
 		});
@@ -68,7 +179,7 @@
 		var latlng = new L.LatLng(38.8225909761771, 105.380859375);
 		// 右键事件
 		_map = new L.Map('mainmap', {
-			center: latlng,
+			center: [33.739474, 107.182681],
 			zoom: 2,
 			fullscreenControl: {
 				pseudoFullscreen: false
@@ -76,36 +187,78 @@
 			contextmenu: true,
 			contextmenuWidth: 140,
 			contextmenuItems: [{
-				text: '显示地理位置',
-				callback: showCoordinates
-			}, {
-				text: '中心点',
-				callback: centerMap
-			}, '-', {
-				text: '放大',
-				icon: 'dist/images/zoom-in.png',
-				callback: zoomIn
-			}, {
-				text: 'Zoom out',
-				icon: 'dist/images/zoom-out.png',
-				callback: zoomOut
-			}],
-			layers: [glayer_normal]
+					text: '显示地理位置',
+					callback: showCoordinates
+				}, {
+					text: '中心点',
+					callback: centerMap
+				}, '-',
+				{
+					text: '放大',
+					icon: 'dist/images/zoom-in.png',
+					callback: zoomIn
+				}, {
+					text: '缩小',
+					icon: 'dist/images/zoom-out.png',
+					callback: zoomOut
+				}
+			],
+			layers: [glayer_normal],
 		});
+
+
+		dialog = L.control.dialog()
+			.setContent('')
+			.addTo(_map);
+		dialog.close();
+		dialog.setLocation([document.documentElement.clientHeight - 320, document.documentElement.clientWidth - 320]);
+		warnflag = false;
+		_map.addControl(L.control.search());
+
+		var latlngArr;
+		// 添加回放功能
+		for (var i = 0, latlngArr = [], len = route.length; i < len; i++) {
+			latlngArr.push(new L.LatLng(route[i][0], route[i][1]));
+		}
+		var line = L.polyline(latlngArr, {
+			snakingSpeed: 400
+		});
+		line.addTo(_map).snakeIn();
+
+
 
 
 
 
 		//添加页面控件
+		// L.control.custom({
+		// 		position: 'topright',
+		// 		content: `
+		// 		<input type="button" value="回放" class="btn" onclick="setData()">
+		// 		<input type="button" value="隐藏" class="btn" onclick="hide()">
+		// 		<input type="button" value="显示" class="btn" onclick="show()">
+		// 		<input type="button" value="暂停" class="btn" onclick="pause()">
+		// 		<input type="button" value="播放" class="btn" onclick="play()">
+		// 		<input type="button" value="删除" class="btn" onclick="destroy()">`,
+		// 		classes: 'btn-group-vertical btn-group-sm',
+		// 		style: {
+		// 			margin: '10px',
+		// 			padding: '0px 0 0 0',
+		// 			cursor: 'pointer'
+		// 		},
+		// 		datas: {
+		// 			'foo': 'bar',
+		// 		},
+		// 		events: {}
+		// 	})
+		// 	.addTo(_map);
 		L.control.custom({
 				position: 'topright',
 				content: `
-				<input type="button" value="回放" class="btn" onclick="setData()">
-				<input type="button" value="隐藏" class="btn" onclick="hide()">
-				<input type="button" value="显示" class="btn" onclick="show()">
-				<input type="button" value="暂停" class="btn" onclick="pause()">
-				<input type="button" value="播放" class="btn" onclick="play()">
-				<input type="button" value="删除" class="btn" onclick="destroy()">`,
+				<input type="button" value="显示二级" class="btn" onclick="setDataTwo()">
+				<input style='margin-top:10px' type="button" value="警示框" class="btn" onclick="setDataWarn()">
+				<input style='margin-top:10px' type="button" value="强调标注" class="btn" onclick="makerSpe()">
+				`,
 				classes: 'btn-group-vertical btn-group-sm',
 				style: {
 					margin: '10px',
@@ -138,8 +291,8 @@
 				},
 			})
 			.addTo(_map);
-		var marker = L.marker([34.298068350990825, 108.94592285156251]).addTo(_map);
-		var marker2 = L.marker([29.35345166863502, 106.94091796875001]).addTo(_map);
+		// var marker = L.marker([34.298068350990825, 108.94592285156251]).addTo(_map);
+		// var marker2 = L.marker([29.35345166863502, 106.94091796875001]).addTo(_map);
 		var baseLayers = {
 			"普通地图": glayer_normal,
 		};
@@ -150,9 +303,9 @@
 		];
 		// 划线
 		L.control.polylineMeasure(options).addTo(_map);
-		var polyline = L.polyline(latlngs, {
-			color: 'red'
-		}).addTo(_map);
+		// var polyline = L.polyline(latlngs, {
+		// 	color: 'red'
+		// }).addTo(_map);
 		// 缩放条
 		L.control.scale({
 			maxWidth: 240,
@@ -160,50 +313,131 @@
 			imperial: false,
 			position: 'bottomleft'
 		}).addTo(_map);
+		var markerss = L.marker(latlng).addTo(_map).on('click', function () {
+			this.toggleBouncing();
+		}).bounce();
+
+		// 窗口 
+
+		var win = L.control.window(_map, {
+				title: 'Hello world!',
+				content: 'This is my first control window.',
+				position: 'top'
+			})
+			.show();
+		var slideMenu = L.control.slideMenu('', {
+			position: 'topright',
+			menuposition: 'topright',
+			width: '30%',
+			height: '100%',
+			changeperc: 20,
+			delay: '50',
+			icon: 'fa-chevron-left'
+		}).addTo(_map);
+		slideMenu.setContents(
+			`
+		<div class="fuxuan">
+		</div>
+		<div class="search" ><button>查找</button></div>
+		`
+		);
+		$(".chklist").labelauty("chklist", "check");
+
+		// _map.on('click', function () {
+		// 	L.Marker.stopAllBouncingMarkers();
+		// });
 		// zoom the map to the polyline
-		_map.fitBounds(polyline.getBounds());
+		// _map.fitBounds(polyline.getBounds());
 		// 划线
-		var polygon = L.polyline([
-			[61.77312286453146, 94.74609375000001],
-			[40.84706035607122, 74.00390625000001],
+		// var polygon = L.polyline([
+		// 	[61.77312286453146, 94.74609375000001],
+		// 	[40.84706035607122, 74.00390625000001],
 
-		]).addTo(_map);
+		// ]).addTo(_map);
 		// 冒泡
-		marker.bindPopup("<b>西安</b>");
+		// marker.bindPopup("<b>西安</b>");
 		// 滑动提示
-		marker.bindTooltip("西安，古称长安、镐京。");
-		marker2.bindPopup("<b>重庆</b>");
+		// marker.bindTooltip("西安，古称长安、镐京。");
+		// marker2.bindPopup("<b>重庆</b>");
 		// 放射
-		var lrmap = _map.setView([35, -95], 5);
-		// 标记群
-		var markers = L.markerClusterGroup();
-		for (var i = 0; i < addressPoints.length; i++) {
-			var a = addressPoints[i];
-			var title = a[2];
-			var marker = L.marker(new L.LatLng(a[0], a[1]), {
-				title: title
-			});
-			marker.bindPopup(title);
-			markers.addLayer(marker);
-		}
 
-		_map.addLayer(markers);
+		// 标记群
+		// var markers = L.markerClusterGroup();
+		// for (var i = 0; i < addressPoints.length; i++) {
+		// 	var a = addressPoints[i];
+		// 	var title = a[2];
+		// 	var marker = L.marker(new L.LatLng(a[0], a[1]), {
+		// 		title: title
+		// 	});
+		// 	marker.bindPopup(title);
+		// 	markers.addLayer(marker);
+		// }
+
+		// _map.addLayer(markers);
 		//自定义标记
 		optionIcon = {
-			icon: 'camera-retro',
-			spin: '',
+			icon: '',
 			borderColor: '#8A90B4',
 			textColor: 'white',
-			backgroundColor: '#8A90B4'
+			iconSize: [40, 40],
+			backgroundColor: '#ffcc00',
 		};
-		L.marker([34.298068350990825, 108.94592285156251], {
-			icon: L.BeautifyIcon.icon(optionIcon),
-			draggable: true
-		}).addTo(_map).bindPopup("I'm Beautify");
+		// L.marker([34.298068350990825, 108.94592285156251], {
+		// 	icon: L.BeautifyIcon.icon(optionIcon),
+		// 	draggable: false
+		// }).addTo(_map).bindPopup("I'm Beautify");
 
 		function showCoordinates(e) {
 			alert(e.latlng);
 		}
+
+		$('.search').click(function () {
+			var checkID = [];
+			$.each($('input[name=chk]:checked'), function () {
+				checkID.push($(this).val());
+			});
+			getPoint(checkID);
+		})
+		// var arr = [{
+		// 		lnglat: [34.298068350990825, 108.94592285156251],
+		// 		optionIcon: {
+		// 			icon: '',
+		// 			borderColor: '#8A90B4',
+		// 			textColor: 'white',
+		// 			iconSize: [40, 40],
+		// 			backgroundColor: '#ffcc66',
+		// 		},
+		// 		labels: 'xasdsadsadxxx'
+		// 	},
+		// 	{
+		// 		lnglat: [31.298068350990825, 106.94592285156251],
+		// 		optionIcon: {
+		// 			icon: '',
+		// 			borderColor: '#8A90B4',
+		// 			textColor: 'white',
+		// 			iconSize: [40, 40],
+		// 			backgroundColor: '#ffccee',
+		// 		},
+		// 		labels: 'xxssssssssssxx'
+		// 	}, {
+		// 		lnglat: [36.98068350990825, 105.94592285156251],
+		// 		optionIcon: {
+		// 			icon: '',
+		// 			borderColor: '#8A90B4',
+		// 			textColor: 'white',
+		// 			iconSize: [20, 20],
+		// 			backgroundColor: '#ffcc00',
+		// 		},
+		// 		labels: 'xxxx'
+		// 	}
+		// ]
+		// arr.map(f => {
+		// 	L.marker(f.lnglat, {
+		// 		icon: L.BeautifyIcon.icon(f.optionIcon),
+		// 		draggable: false
+		// 	}).addTo(_map).bindPopup(f.labels);
+		// })
+
 
 		function centerMap(e) {
 			_map.panTo(e.latlng);
@@ -217,36 +451,96 @@
 			_map.zoomOut();
 		}
 		// <!-- code -->
-		migrationLayer = new L.migrationLayer({
-			map: lrmap,
-			data: data,
-			pulseRadius: 20,
-			pulseBorderWidth: 2,
-			arcWidth: 1,
-			arcLabel: true,
-			arcLabelFont: '10px sans-serif',
-			maxWidth: 2
-		});
-		migrationLayer.addTo(lrmap);
-		var geojsonLayer = new L.Util.ajax("./dist/json/geo.json").then(function (data) {
-			migrationLayer.setData(data);
-			setTimeout(function () {
-				for (var i = 0; i <= data.length; i++) {
-					if (i <= data.length - 1) {
-						var a = L.marker([data[i].to[1] + '', data[i].to[0] + '']).addTo(_map);
-						a.bindPopup(data[i].labels[1]);
-					} else {
-						var a = L.marker([data[0].from[1] + '', data[0].from[0] + '']).addTo(_map);
-						a.bindPopup(data[0].labels[0]);
-					}
+		// getWarnTips();
+		// saveWarnTips();
+		//警示框
+		function getWarnTips() {
+			new L.Util.ajax(Globolurl + "/warn/getWarnTipsList").then(function (res) {
+				if (res.rtncode == 0) {
+					var html = '';
+					res.data.map(f => {
+						html +=
+							`<li>
+					<div>航线号：${f.routeNumber}</div><div>内容：${f.warningContent}</div><div>时间：${f.warningTime}</div>
+					</li>`
+					});
+					dialog.setContent(html);
+					dialog.setLocation([document.documentElement.clientHeight - 320, document.documentElement.clientWidth - 320]);
 				}
-			}, 3000)
+			});
+		}
+		var lrmap = _map.setView([35, 107], 5);
+
+		$.ajax({
+			type: "GET",
+			url: Globolurl + '/Objective/selectList',
+			success: function (res) {
+				var html = '';
+
+				res.data.map(f => {
+					html +=
+						`<input type="checkbox" value=${f.objno} name="chk" class="chklist" />
+						<label class="chkbox">
+						<span class="check-image"></span>
+						<span class="radiobox-content">${f.objno}</span>
+						</label>`
+				})
+				$('.fuxuan').html(html);
+			},
 
 		});
+		getPoint([]);		
+		setInterval(function () {
+			getPoint([]);			
+		}, 300000);
 	})();
 
 	function setData() {
 		migrationLayer.setData(data2);
+	}
+
+	function setDataWarn() {
+		if (warnflag) {
+			dialog.close();
+			warnflag = !warnflag
+		} else {
+			warnflag = !warnflag
+			dialog.open();
+		}
+
+	}
+
+	function makerSpe() {
+		L.Marker.stopAllBouncingMarkers();
+	}
+
+	function setDataTwo() {
+
+
+		flag = !flag;
+		var geojsonLayer = new L.Util.ajax(Globolurl + "/dtArea/getCityPoint?flag=" + flag).then(function (res) {
+			if (res) {
+				for (var i = 0; i < makerArr.length; i++) {
+					makerArr[i].remove();
+				}
+				makerArr = [];
+				migrationLayer.setData(res.data.cityList);
+				res.data.cityFalg.map(f => {
+					var marker = L.marker(f.lnglat);
+					var markerItem = marker.addTo(_map).bindPopup(f.labels);
+					makerArr.push(marker);
+				})
+				for (var i = 0; i <= res.length; i++) {
+					if (i <= res.length - 1) {
+						var a = L.marker([res[i].to[1] + '', res[i].to[0] + '']).addTo(_map);
+						a.bindPopup(res[i].labels[1]);
+					} else {
+						var a = L.marker([res[0].from[1] + '', res[0].from[0] + '']).addTo(_map);
+						a.bindPopup(res[0].labels[0]);
+					}
+				}
+			}
+		});
 	}
 
 	function hide() {
@@ -268,4 +562,6 @@
 	function destroy() {
 		migrationLayer.destroy();
 	}
+
+	// 文字轮播
 </script>

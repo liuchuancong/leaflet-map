@@ -81,7 +81,10 @@ $(function(){
           time: '00:00:00,'
         }],
         hide: function () {
-          console.info(this.$input.eq(0).val(), this.$input.eq(1).val())
+          startTime = this.$input.eq(0).val();
+          endTime =  this.$input.eq(1).val();
+          getPoint();
+          console.info(this.$input.eq(0).val(), this.$input.eq(1).val());
         }
       });
   });
